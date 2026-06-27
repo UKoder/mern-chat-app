@@ -1,18 +1,28 @@
 const express = require("express");
 const app = express();
+const dotenv = require("dotenv").config();
 
-const dotenv = require("dotenv");
-dotenv.config();
+const connectDb  = require("../config/db");
+const cors = require("cors");
+const {clerkMiddleware} = require("@clerk/express");
 
 const PORT = process.env.PORT;
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
-console.log("Db url = ", process.env.DB_URL);
+app.use(express.json());
+app.use(clerkMiddleware);
+app.use(cors({origin: FRONTEND_URL, credentials: true}));
 
 app.get("/", (req,res)=>{
-    console.log("Homepage");
     res.send("Home");
 })
+app.get("/health", (req,res)=>{
+    res.status(200).json({ok : true});
+})
+
 
 app.listen(PORT, ()=>{
+    connectDb();
     console.log(`Server running on http://localhost:${PORT}`);
 })
+
