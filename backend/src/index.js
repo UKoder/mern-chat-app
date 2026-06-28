@@ -8,10 +8,15 @@ const connectDb  = require("./config/db");
 const cors = require("cors");
 const {clerkMiddleware} = require("@clerk/express");
 
-const PORT = process.env.PORT;
-const FRONTEND_URL = process.env.FRONTEND_URL;
+const PORT = Number(process.env.PORT || 3001);
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 const publicDir = path.join(process.cwd(), "public")
+
+if (!PORT || Number.isNaN(PORT)) {
+    console.error("Missing or invalid PORT environment variable. Set PORT in Render or use a default.");
+    process.exit(1);
+}
 
 app.use(express.json());
 app.use(clerkMiddleware);
@@ -26,13 +31,23 @@ app.get("/health", (req,res)=>{
 
 if (fs.existsSync(publicDir)){
     app.use(express.static(publicDir));
-    app.get("/{*any}", (req,res,next)=>{
+    app.get("*", (req,res,next)=>{
         res.sendFile(path.join(publicDir, "index.html"), (err)=>next(err));
     })
 }
 
-app.listen(PORT, ()=>{
-    connectDb();
-    console.log(`Server running on http://localhost:${PORT}`);
-})
+async function startServer() {
+    try {
+        await connectDb();
+
+        app.listen(PORT, "0.0.0.0", ()=>{
+            console.log(`Server running on http://0.0.0.0:${PORT}`);
+        });
+    } catch (error) {
+        console.error("Server startup failed:", error);
+        process.exit(1);
+    }
+}
+
+startServer();
 
