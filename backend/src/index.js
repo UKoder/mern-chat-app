@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv").config();
 
-const connectDb  = require("../config/db");
+const connectDb  = require("./config/db");
 const cors = require("cors");
 const {clerkMiddleware} = require("@clerk/express");
 
